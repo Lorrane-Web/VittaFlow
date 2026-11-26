@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="jakarta.faces.html" xmlns:f="jakarta.faces.core"
+    xmlns:p="primefaces" xmlns:ui="jakarta.faces.facelets">
+<h:head>
+    <title>VittaFlow</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <h:outputStylesheet library="css" name="style.css" />
+</h:head>
+<h:body>
+    <div class="topbar">
+        <div class="brand">VittaFlow</div>
+        <div class="nav">
+            <h:link outcome="/dashboard.xhtml" value="Início" />
+            <h:link outcome="/rotina.xhtml" value="Rotina" />
+            <h:link outcome="/evolucao.xhtml" value="Evolução" />
+            <h:link outcome="/profissionais.xhtml" value="Profissionais" />
+            <h:link outcome="/perfil.xhtml" value="Perfil" />
+            <h:form>
+                <p:commandLink value="Sair" action="#{vittaController.logout}" ajax="false" />
+            </h:form>
+        </div>
+    </div>
+    <div class="shell">
+        <h1 class="title">Meus Hábitos</h1>
+        <p class="sub">Registre rotina, sono, água, passos, treino e alimentação.</p>
+        <p:messages id="m" />
+        <h:form id="quickActions">
+        <div class="grid g3">
+            <div class="card"><b>Rotina</b>
+                <p class="muted">Descrição e categoria.</p>
+                <p:commandButton type="button" value="Adicionar" onclick="PF('r').show()" />
+            </div>
+            <div class="card"><b>Sono</b>
+                <p class="muted">Horários e qualidade.</p>
+                <p:commandButton type="button" value="Adicionar" onclick="PF('s').show()" />
+            </div>
+            <div class="card"><b>Água</b>
+                <p class="muted">Consumo e meta.</p>
+                <p:commandButton type="button" value="Adicionar" onclick="PF('a').show()" />
+            </div>
+            <div class="card"><b>Passos</b>
+                <p class="muted">Registro manual.</p>
+                <p:commandButton type="button" value="Adicionar" onclick="PF('p').show()" />
+            </div>
+            <div class="card"><b>Treino</b>
+                <p class="muted">Exercício e duração.</p>
+                <p:commandButton type="button" value="Adicionar" onclick="PF('t').show()" />
+            </div>
+            <div class="card"><b>Alimentação</b>
+                <p class="muted">Refeições.</p>
+                <p:commandButton type="button" value="Adicionar" onclick="PF('f').show()" />
+            </div>
+        </div>
+        </h:form>
+        <div class="card section"><b>Academia</b>
+            <p class="muted">Marque sua presença.</p>
+            <h:form>
+                <p:commandButton value="Fui hoje" action="#{vittaController.fuiHoje}" update="@form :m"
+                    icon="pi pi-check" />
+            </h:form>
+        </div>
+        <div class="card section"><b>Histórico de treinos</b>
+            <p:dataTable value="#{vittaController.treinos}" var="x" emptyMessage="Nenhum treino.">
+                <p:column headerText="Data">#{x.data}</p:column>
+                <p:column headerText="Exercício">#{x.tipoExercicio}</p:column>
+                <p:column headerText="Duração">#{x.duracao} min</p:column>
+                <p:column headerText="Academia">#{x.checkInAcademia ? 'Sim':'Não'}</p:column>
+                <p:column headerText="Ação">
+                    <h:form>
+                        <p:commandButton value="Excluir" action="#{vittaController.excluir(x)}" update="@form :m"
+                            styleClass="ui-button-danger ui-button-text" />
+                    </h:form>
+                </p:column>
+            </p:dataTable>
+        </div>
+        <p:dialog widgetVar="r" header="Rotina" modal="true">
+            <h:form>
+                <div class="form">
+                    <p:datePicker value="#{vittaController.rotina.data}" pattern="dd/MM/yyyy" hideOnDateTimeSelect="true" />
+                    <p:inputText placeholder="Categoria" value="#{vittaController.rotina.categoria}" />
+                    <p:inputTextarea placeholder="Descrição" value="#{vittaController.rotina.descricao}" />
+                    <p:commandButton value="Salvar" action="#{vittaController.salvarRotina}" update=":m"
+                        oncomplete="hideVittaCalendars(); PF('r').hide()" />
+                </div>
+            </h:form>
+        </p:dialog>
+        <p:dialog widgetVar="s" header="Sono" modal="true">
+            <h:form>
+                <div class="form">
+                    <p:datePicker value="#{vittaController.sono.data}" pattern="dd/MM/yyyy" hideOnDateTimeSelect="true" />
+                    <p:datePicker value="#{vittaController.sono.horarioDormir}" timeOnly="true" pattern="HH:mm" />
+                    <p:datePicker value="#{vittaController.sono.horarioAcordar}" timeOnly="true" pattern="HH:mm" />
+                    <p:selectOneMenu value="#{vittaController.sono.qualidade}">
+                        <f:selectItems value="#{vittaController.qualidadesSono}" var="q" itemValue="#{q}"
+                            itemLabel="#{q.descricao}" />
+                    </p:selectOneMenu>
+                    <p:commandButton value="Salvar" action="#{vittaController.salvarSono}" update=":m"
+                        oncomplete="hideVittaCalendars(); PF('s').hide()" />
+                </div>
+            </h:form>
+        </p:dialog>
+        <p:dialog widgetVar="a" header="Água" modal="true">
+            <h:form>
+                <div class="form">
+                    <p:datePicker value="#{vittaController.agua.data}" pattern="dd/MM/yyyy" hideOnDateTimeSelect="true" />
+                    <p:inputNumber placeholder="Quantidade (ml)" value="#{vittaController.agua.quantidadeMl}" />
+                    <p:inputNumber placeholder="Meta diária (ml)" value="#{vittaController.agua.metaDiaria}" />
+                    <p:commandButton value="Salvar" action="#{vittaController.salvarAgua}" update=":m"
+                        oncomplete="hideVittaCalendars(); PF('a').hide()" />
+                </div>
+            </h:form>
+        </p:dialog>
+        <p:dialog widgetVar="p" header="Passos" modal="true">
+            <h:form>
+                <div class="form">
+                    <p:datePicker value="#{vittaController.passos.data}" pattern="dd/MM/yyyy" hideOnDateTimeSelect="true" />
+                    <p:inputNumber placeholder="Passos" value="#{vittaController.passos.quantidadePassos}" />
+                    <p:inputNumber placeholder="Meta" value="#{vittaController.passos.metaPassos}" />
+                    <p:commandButton value="Salvar" action="#{vittaController.salvarPassos}" update=":m"
+                        oncomplete="hideVittaCalendars(); PF('p').hide()" />
+                </div>
+            </h:form>
+        </p:dialog>
+        <p:dialog widgetVar="t" header="Treino" modal="true">
+            <h:form>
+                <div class="form">
+                    <p:datePicker value="#{vittaController.treino.data}" pattern="dd/MM/yyyy" hideOnDateTimeSelect="true" />
+                    <p:inputText placeholder="Tipo de exercício" value="#{vittaController.treino.tipoExercicio}" />
+                    <p:inputNumber placeholder="Duração (min)" value="#{vittaController.treino.duracao}" />
+                    <p:inputTextarea placeholder="Observações" value="#{vittaController.treino.observacoes}" />
+                    <p:selectBooleanCheckbox value="#{vittaController.treino.checkInAcademia}" />
+                    <h:outputText value="Frequência na academia" />
+                    <p:commandButton value="Salvar" action="#{vittaController.salvarTreino}" update=":m"
+                        oncomplete="hideVittaCalendars(); PF('t').hide()" />
+                </div>
+            </h:form>
+        </p:dialog>
+        <p:dialog widgetVar="f" header="Alimentação" modal="true">
+            <h:form>
+                <div class="form">
+                    <p:datePicker value="#{vittaController.alimentacao.data}" pattern="dd/MM/yyyy" hideOnDateTimeSelect="true" />
+                    <p:selectOneMenu value="#{vittaController.alimentacao.tipoRefeicao}">
+                        <f:selectItems value="#{vittaController.tiposRefeicao}" var="x" itemValue="#{x}"
+                            itemLabel="#{x.descricao}" />
+                    </p:selectOneMenu>
+                    <p:inputTextarea placeholder="Descrição" value="#{vittaController.alimentacao.descricao}" />
+                    <p:commandButton value="Salvar" action="#{vittaController.salvarAlimentacao}" update=":m"
+                        oncomplete="hideVittaCalendars(); PF('f').hide()" />
+                </div>
+            </h:form>
+        </p:dialog>
+    </div>
+    <script type="text/javascript">
+        function hideVittaCalendars() {
+            document.querySelectorAll('.ui-datepicker, .ui-datepicker-panel, .ui-datepicker-container').forEach(function (panel) {
+                panel.style.display = 'none';
+                panel.setAttribute('aria-hidden', 'true');
+            });
+        }
+
+        document.addEventListener('click', function (event) {
+            if (event.target.closest('.ui-datepicker-calendar td, .ui-datepicker-calendar a, .ui-datepicker-calendar span')) {
+                window.setTimeout(hideVittaCalendars, 150);
+            }
+        });
+
+        document.addEventListener('focusin', function (event) {
+            if (event.target.matches('.ui-dialog input, .ui-dialog textarea, .ui-dialog select')) {
+                hideVittaCalendars();
+            }
+        });
+    </script>
+</h:body>
+
+</html>

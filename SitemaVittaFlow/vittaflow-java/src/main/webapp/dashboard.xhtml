@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="jakarta.faces.html" xmlns:f="jakarta.faces.core" xmlns:p="primefaces" xmlns:ui="jakarta.faces.facelets">
+<h:head><title>VittaFlow</title><meta name="viewport" content="width=device-width, initial-scale=1"/><h:outputStylesheet library="css" name="style.css"/></h:head>
+<h:body>
+    <div class="topbar">
+        <div class="brand">VittaFlow</div>
+        <h:panelGroup layout="block" styleClass="nav" rendered="#{vittaController.autenticado and not vittaController.profissional}">
+            <h:link outcome="/dashboard.xhtml" value="Início"/><h:link outcome="/rotina.xhtml" value="Hábitos"/><h:link outcome="/evolucao.xhtml" value="Evolução"/><h:link outcome="/profissionais.xhtml" value="Profissionais"/><h:link outcome="/perfil.xhtml" value="Perfil"/>
+            <h:form><p:commandLink value="Sair" action="#{vittaController.logout}" ajax="false"/></h:form>
+        </h:panelGroup>
+        <h:panelGroup layout="block" styleClass="nav" rendered="#{vittaController.autenticado and vittaController.profissional}">
+            <h:link outcome="/dashboard.xhtml" value="Início"/><h:link outcome="/acompanhamento.xhtml" value="Usuários"/><h:link outcome="/feedback.xhtml" value="Feedback"/><h:link outcome="/perfil.xhtml" value="Perfil"/>
+            <h:form><p:commandLink value="Sair" action="#{vittaController.logout}" ajax="false"/></h:form>
+        </h:panelGroup>
+    </div>
+
+    <div class="shell">
+        <h:panelGroup rendered="#{vittaController.autenticado and not vittaController.profissional}">
+            <div><span class="pill">Hoje</span><h1 class="title">Olá, #{vittaController.usuarioLogado.nome}</h1><p class="sub">Acompanhe sua rotina e evolução.</p></div>
+            <div class="grid g4">
+                <div class="card"><b>Água</b><div class="metric">#{vittaController.aguaHoje()}</div><p:progressBar value="#{vittaController.progressoAgua()}" displayOnly="true"/><span class="muted">#{vittaController.progressoAgua()}% da meta</span></div>
+                <div class="card"><b>Sono</b><div class="metric">#{vittaController.sonoHoje()}</div><span class="muted">Registro de hoje</span></div>
+                <div class="card"><b>Passos</b><div class="metric">#{vittaController.passosHoje()}</div><p:progressBar value="#{vittaController.progressoPassos()}" displayOnly="true"/><span class="muted">#{vittaController.progressoPassos()}% da meta</span></div>
+                <div class="card"><b>Exercício</b><div class="metric">#{vittaController.treinoHoje()}</div><span class="muted">Treino de hoje</span></div>
+            </div>
+            <div class="grid g2 section">
+                <div class="card"><b>Próximas atividades</b><p class="muted">Registre rotina, sono, água, passos, treino e alimentação.</p><p:button outcome="/rotina.xhtml" value="Meus hábitos" icon="pi pi-calendar"/></div>
+                <div class="card"><b>Resumo de evolução</b><div class="grid g2"><div><span class="muted">Academia/semana</span><div class="metric">#{vittaController.academiaSemana()}</div></div><div><span class="muted">Academia/mês</span><div class="metric">#{vittaController.academiaMes()}</div></div></div><p:button outcome="/evolucao.xhtml" value="Ver evolução" icon="pi pi-chart-line"/></div>
+            </div>
+            <div class="card section"><b>Profissionais</b><p class="muted">Selecione profissionais para acompanhamento online e consulte os feedbacks recebidos.</p><p:button outcome="/profissionais.xhtml" value="Ver profissionais" icon="pi pi-users"/></div>
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{vittaController.autenticado and vittaController.profissional}">
+            <span class="pill">Área profissional</span>
+            <h1 class="title">Olá, #{vittaController.profissionalEdicao.nome}</h1>
+            <p class="sub">Acompanhe seus usuários e consulte os dados registrados por eles.</p>
+            <div class="grid g4">
+                <div class="card"><span class="muted">Usuários acompanhados</span><div class="metric">#{vittaController.usuariosAcompanhamento()}</div></div>
+                <div class="card"><span class="muted">Consultas online</span><div class="metric">#{vittaController.consultasOnline.size()}</div></div>
+                <div class="card"><span class="muted">Solicitações de consulta</span><div class="metric">#{vittaController.consultasPendentes()}</div></div>
+                <div class="card"><span class="muted">Feedbacks registrados</span><div class="metric">#{vittaController.feedbacksEnviados()}</div></div>
+            </div>
+            <div class="card section">
+                <div class="section-head"><div><b>Consultas online</b><p class="muted">Usuários selecionados para acompanhamento com você.</p></div><p:button outcome="/acompanhamento.xhtml" value="Ver usuários" icon="pi pi-users"/></div>
+                <p:dataTable value="#{vittaController.consultasOnline}" var="c" emptyMessage="Nenhuma consulta online no momento.">
+                    <p:column headerText="Usuário">#{c.usuario.nome}</p:column><p:column headerText="Data">#{c.data}</p:column><p:column headerText="Horário">#{c.horario}</p:column><p:column headerText="Status"><span class="pill">#{c.status.descricao}</span></p:column>
+                    <p:column headerText="Ação"><h:form><p:commandButton value="Acompanhar" action="#{vittaController.selecionarUsuarioPorConsulta(c)}" ajax="false" icon="pi pi-eye"/></h:form></p:column>
+                </p:dataTable>
+            </div>
+            <div class="card section"><b>Meus usuários</b><p:dataTable value="#{vittaController.vinculados}" var="v" emptyMessage="Nenhum usuário aceito."><p:column headerText="Usuário">#{v.usuario.nome}</p:column><p:column headerText="Status"><span class="pill">Acompanhamento ativo</span></p:column><p:column headerText="Ação"><h:form><p:commandButton value="Consultar dados" action="#{vittaController.selecionarUsuario(v)}" ajax="false" icon="pi pi-chart-line"/></h:form></p:column></p:dataTable></div>
+            <div class="card section notice"><b>Consulta somente leitura</b><p class="muted">Os registros, hábitos e gráficos pertencem ao usuário. O profissional pode consultar e registrar feedback, mas não pode editar, excluir ou atualizar esses dados.</p></div>
+        </h:panelGroup>
+    </div>
+</h:body>
+</html>

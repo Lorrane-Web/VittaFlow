@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="jakarta.faces.html" xmlns:f="jakarta.faces.core"
+    xmlns:p="primefaces">
+<h:head>
+    <title>Perfil • VittaFlow</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <h:outputStylesheet library="css" name="style.css" />
+</h:head>
+<h:body>
+    <div class="topbar">
+        <div class="brand">VittaFlow</div>
+        <h:panelGroup layout="block" styleClass="nav" rendered="#{not vittaController.profissional}">
+            <h:link outcome="/dashboard.xhtml" value="Início" />
+            <h:link outcome="/rotina.xhtml" value="Hábitos" />
+            <h:link outcome="/evolucao.xhtml" value="Evolução" />
+            <h:link outcome="/profissionais.xhtml" value="Profissionais" />
+            <h:link outcome="/perfil.xhtml" value="Perfil" />
+            <h:form>
+                <p:commandLink value="Sair" action="#{vittaController.logout}" ajax="false" />
+            </h:form>
+        </h:panelGroup>
+        <h:panelGroup layout="block" styleClass="nav" rendered="#{vittaController.profissional}">
+            <h:link outcome="/dashboard.xhtml" value="Início" />
+            <h:link outcome="/acompanhamento.xhtml" value="Usuários" />
+            <h:link outcome="/feedback.xhtml" value="Feedback" />
+            <h:link outcome="/perfil.xhtml" value="Perfil" />
+            <h:form>
+                <p:commandLink value="Sair" action="#{vittaController.logout}" ajax="false" />
+            </h:form>
+        </h:panelGroup>
+    </div>
+    <div class="shell">
+        <h:panelGroup rendered="#{not vittaController.profissional}">
+            <h1 class="title">Meu Perfil</h1>
+            <p class="sub">Seus dados e profissionais selecionados.</p>
+            <p:messages id="m" />
+            <div class="grid g2">
+                <div class="card">
+                    <h:form>
+                        <div class="form">
+                            <p:outputLabel value="Nome" />
+                            <p:inputText value="#{vittaController.usuarioLogado.nome}" />
+                            <p:outputLabel value="E-mail" />
+                            <p:inputText value="#{vittaController.usuarioLogado.email}" readonly="true" />
+                            <p:outputLabel value="Tipo" />
+                            <h:outputText value="Usuário comum" />
+                            <p:commandButton value="Salvar alterações" action="#{vittaController.salvarPerfil}"
+                                update="@form :m" />
+                        </div>
+                    </h:form>
+                </div>
+                <div class="card"><b>Privacidade</b>
+                    <p class="muted">Consentimento LGPD: #{vittaController.usuarioLogado.consentimentoLGPD ?
+                        'Sim':'Não'}</p>
+                    <h:form>
+                        <p:commandButton value="Excluir minha conta" action="#{vittaController.excluirConta}"
+                            ajax="false" styleClass="ui-button-danger" icon="pi pi-trash" />
+                    </h:form>
+                </div>
+            </div>
+            <div class="card section"><b>Feedbacks recebidos</b>
+                <p:dataTable value="#{vittaController.feedbacks}" var="f" emptyMessage="Nenhum feedback recebido.">
+                    <p:column headerText="Profissional">#{f.profissional.nome}</p:column>
+                    <p:column headerText="Data">#{f.dataRegistro}</p:column>
+                    <p:column headerText="Feedback">#{f.texto}</p:column>
+                </p:dataTable>
+            </div>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{vittaController.profissional}">
+            <h1 class="title">Perfil profissional</h1>
+            <p class="sub">Informações profissionais e resumo do acompanhamento.</p>
+            <p:messages id="mp" />
+            <div class="grid g3">
+                <div class="card profile-hero">
+                    <div class="avatar large">#{vittaController.profissionalEdicao.nome.substring(0,1)}</div>
+                    <h2>#{vittaController.profissionalEdicao.nome}</h2><span
+                        class="pill">#{vittaController.profissionalEdicao.especialidade.descricao}</span>
+                    <p class="muted">#{vittaController.profissionalEdicao.bio}</p><span
+                        class="muted">#{vittaController.profissionalEdicao.registroProfissional}</span>
+                </div>
+                <div class="card"><span class="muted">Usuários acompanhados</span>
+                    <div class="metric">#{vittaController.usuariosAcompanhamento()}</div>
+                    <p class="muted">Acesso somente para consulta.</p>
+                </div>
+                <div class="card"><span class="muted">Feedbacks registrados</span>
+                    <div class="metric">#{vittaController.feedbacksEnviados()}</div>
+                    <p class="muted">Orientações associadas aos usuários.</p>
+                </div>
+            </div>
+            <div class="card section">
+                <h:form>
+                    <div class="form">
+                        <p:outputLabel value="Nome profissional" />
+                        <p:inputText value="#{vittaController.usuarioLogado.nome}" />
+                        <p:outputLabel value="Especialidade" />
+                        <p:selectOneMenu value="#{vittaController.profissionalEdicao.especialidade}">
+                            <f:selectItems value="#{vittaController.especialidades}" var="e" itemValue="#{e}"
+                                itemLabel="#{e.descricao}" />
+                        </p:selectOneMenu>
+                        <p:outputLabel value="Registro profissional" />
+                        <p:inputText value="#{vittaController.profissionalEdicao.registroProfissional}" />
+                        <p:outputLabel value="Descrição profissional" />
+                        <p:inputTextarea value="#{vittaController.profissionalEdicao.bio}" rows="4" />
+                        <p:commandButton value="Salvar perfil profissional" action="#{vittaController.salvarPerfil}"
+                            update="@form :mp" />
+                    </div>
+                </h:form>
+            </div>
+            <div class="card section notice"><b>Privacidade e permissão</b>
+                <p class="muted">O profissional pode consultar dados dos usuários vinculados e registrar feedback. Os
+                    registros de hábitos do usuário não podem ser alterados, excluídos ou atualizados pelo profissional.
+                </p>
+            </div>
+        </h:panelGroup>
+    </div>
+</h:body>
+
+</html>
